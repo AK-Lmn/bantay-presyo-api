@@ -193,6 +193,29 @@ docker compose -f docker-compose.prod.yml exec -T db pg_dump -U bantay -Fc banta
 
 The docs under `/docs` are generated files kept in the repo. Run `php artisan scribe:generate` after changing endpoints.
 
+### Render + Neon (free)
+
+`render.yaml` describes a free Render web service built from the Dockerfile, which uses the `prod` stage. The database runs on Neon's free plan. Neither needs a card.
+
+1. Create a Neon project (PostgreSQL 16) and copy its connection string. It looks like `postgresql://user:password@ep-xxx.aws.neon.tech/neondb?sslmode=require`.
+2. Generate an app key: `echo "base64:$(openssl rand -base64 32)"`.
+3. In Render, choose **New > Blueprint** and select this repository. Render reads `render.yaml` and asks for the values marked `sync: false`:
+   - `APP_KEY`: the key from step 2
+   - `APP_URL`: `https://<service-name>.onrender.com` (also use it for `FRONTEND_URL` until there is a frontend)
+   - `DB_URL`: the Neon connection string
+   - `MAIL_HOST`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_FROM_ADDRESS`: SMTP credentials, e.g. from Brevo (`smtp-relay.brevo.com`) or a Gmail app password (`smtp.gmail.com`)
+4. Deploy. Migrations run on every start. Check `https://<service-name>.onrender.com/up`.
+5. Register an account through the API, verify the email, then make it an admin from Neon's SQL editor (the free Render plan has no shell): `UPDATE users SET is_admin = true WHERE email = 'you@example.com';`
+6. Log in again and import SRP bulletins with `POST /api/v1/srps/import` (multipart field `file`).
+
+`TRUSTED_PROXIES=*` is set because Render terminates TLS in front of the app. It makes Laravel use the forwarded scheme and client IP, which signed verification links and rate limiting depend on. Only set it when the app is unreachable except through the proxy.
+
+Limits of the free plans:
+
+- The service sleeps after about 15 minutes without traffic. The first request after that takes up to a minute.
+- There is no scheduler, so `sanctum:prune-expired` does not run. Expired tokens are still rejected; the rows just stay in the table. Delete them now and then from the SQL editor: `DELETE FROM personal_access_tokens WHERE expires_at < now() - interval '1 day';`
+- Neon's free plan has limited storage and compute. Use its restore/branching features or `pg_dump "$DB_URL"` for backups.
+
 ## Tests
 
 The tests run against PostgreSQL, using the `bantay_presyo_test` database. Docker Compose creates it when the database volume is first initialized.
