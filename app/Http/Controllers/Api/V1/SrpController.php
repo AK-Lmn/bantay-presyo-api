@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ImportSrpsRequest;
 use App\Http\Requests\StoreSrpRequest;
 use App\Http\Resources\SrpResource;
 use App\Models\Srp;
+use App\Services\SrpCsvImporter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -44,5 +46,23 @@ class SrpController extends Controller
         $srp->delete();
 
         return response()->noContent();
+    }
+
+    /**
+     * Import an SRP bulletin
+     *
+     * Upload a CSV with a header row. Rows are matched to commodities by name (and `unit` if given).
+     * An existing SRP for the same commodity and date is updated. If any row is invalid, nothing is imported
+     * and every bad row is listed in `error.details.file`. See `docs/srp-import-example.csv`.
+     */
+    #[Authenticated]
+    public function import(ImportSrpsRequest $request, SrpCsvImporter $importer): JsonResponse
+    {
+        $result = $importer->import(
+            $request->file('file')->getRealPath(),
+            $request->validated('effective_date'),
+        );
+
+        return $this->data($result);
     }
 }

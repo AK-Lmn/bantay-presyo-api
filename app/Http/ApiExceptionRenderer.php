@@ -51,7 +51,7 @@ class ApiExceptionRenderer
      * @param  array<string, mixed>|null  $details
      * @param  array<string, string>  $headers
      */
-    private static function error(int $status, string $code, string $message, ?array $details = null, array $headers = []): JsonResponse
+    public static function error(int $status, string $code, string $message, ?array $details = null, array $headers = []): JsonResponse
     {
         return response()->json([
             'error' => [

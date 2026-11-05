@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\ClearsPriceAnalyticsCache;
 use Database\Factories\SrpFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,6 +15,8 @@ use Illuminate\Support\Carbon;
  */
 class Srp extends Model
 {
+    use ClearsPriceAnalyticsCache;
+
     /** @use HasFactory<SrpFactory> */
     use HasFactory;
 

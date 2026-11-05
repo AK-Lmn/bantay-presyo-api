@@ -19,6 +19,8 @@ class ListPriceReportsRequest extends FormRequest
             'to' => ['sometimes', 'date_format:Y-m-d', Rule::when($this->filled('from'), 'after_or_equal:from')],
             'page' => ['sometimes', 'integer', 'min:1'],
             'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
+            'flagged' => ['sometimes', 'boolean'],
+            'include_hidden' => ['sometimes', 'boolean'],
         ];
     }
 
@@ -34,6 +36,8 @@ class ListPriceReportsRequest extends FormRequest
             'to' => ['description' => 'Latest report date (inclusive).', 'example' => now()->toDateString()],
             'page' => ['example' => 1],
             'per_page' => ['description' => 'Max 100.', 'example' => 20],
+            'flagged' => ['description' => 'Only reports more than 30% above the SRP in effect (1) or only the rest (0).', 'example' => 1],
+            'include_hidden' => ['description' => 'Admins only. Include reports hidden by moderators.', 'example' => 0],
         ];
     }
 }

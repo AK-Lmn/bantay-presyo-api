@@ -21,6 +21,7 @@ class UserResource extends JsonResource
             'name' => $this->name,
             'email' => $this->email,
             'is_admin' => $this->is_admin,
+            'email_verified' => $this->email_verified_at !== null,
             'created_at' => $this->created_at?->toIso8601ZuluString(),
         ];
     }

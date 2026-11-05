@@ -7,6 +7,7 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -15,12 +16,14 @@ use Illuminate\Validation\ValidationException;
 use Knuckles\Scribe\Attributes\Authenticated;
 use Knuckles\Scribe\Attributes\Group;
 
-#[Group('Auth', 'Register, log in and log out. Tokens are Sanctum personal access tokens sent as `Authorization: Bearer <token>`.')]
+#[Group('Auth', 'Accounts and tokens. Tokens are sent as `Authorization: Bearer <token>` and expire after 30 days. New accounts get a verification email and must verify before submitting price reports.')]
 class AuthController extends Controller
 {
     public function register(RegisterRequest $request): JsonResponse
     {
         $user = User::query()->create($request->safe()->only(['name', 'email', 'password']));
+
+        event(new Registered($user));
 
         return $this->tokenResponse($user, $request->input('device_name', 'api'), 201);
     }
@@ -48,10 +51,15 @@ class AuthController extends Controller
 
     private function tokenResponse(User $user, string $deviceName, int $status = 200): JsonResponse
     {
+        $minutes = config('sanctum.expiration');
+        $expiresAt = $minutes ? now()->addMinutes((int) $minutes) : null;
+        $token = $user->createToken($deviceName, ['*'], $expiresAt);
+
         return $this->data([
             'user' => UserResource::make($user)->resolve(),
-            'token' => $user->createToken($deviceName)->plainTextToken,
+            'token' => $token->plainTextToken,
             'token_type' => 'Bearer',
+            'expires_at' => $expiresAt?->toIso8601ZuluString(),
         ], $status);
     }
 }

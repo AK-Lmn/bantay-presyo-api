@@ -5,9 +5,13 @@ namespace App\Services;
 use App\Models\Commodity;
 use App\Models\PriceReport;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class PriceAnalyticsService
 {
+    private const CACHE_VERSION_KEY = 'price-analytics:version';
+
     /**
      * Daily average, min and max price for a commodity between two dates (inclusive).
      *
@@ -15,7 +19,18 @@ class PriceAnalyticsService
      */
     public function dailyTrend(Commodity $commodity, Carbon $from, Carbon $to, ?int $marketId = null): array
     {
+        $key = "trend:{$commodity->id}:{$from->toDateString()}:{$to->toDateString()}:{$marketId}";
+
+        return $this->remember($key, fn () => $this->queryDailyTrend($commodity, $from, $to, $marketId));
+    }
+
+    /**
+     * @return list<array{date: string, average: float, min: float, max: float, report_count: int}>
+     */
+    private function queryDailyTrend(Commodity $commodity, Carbon $from, Carbon $to, ?int $marketId): array
+    {
         return PriceReport::query()
+            ->visible()
             ->toBase()
             ->selectRaw('DATE(reported_at) as day')
             ->selectRaw('AVG(price) as average, MIN(price) as min, MAX(price) as max, COUNT(*) as report_count')
@@ -43,10 +58,21 @@ class PriceAnalyticsService
      */
     public function compareWithSrp(Commodity $commodity, int $days, ?int $marketId = null): array
     {
+        $key = "compare:{$commodity->id}:{$days}:{$marketId}:".now()->toDateString();
+
+        return $this->remember($key, fn () => $this->queryCompareWithSrp($commodity, $days, $marketId));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function queryCompareWithSrp(Commodity $commodity, int $days, ?int $marketId): array
+    {
         $to = now();
         $from = $to->copy()->subDays($days - 1)->startOfDay();
 
         $stats = PriceReport::query()
+            ->visible()
             ->toBase()
             ->selectRaw('AVG(price) as average, COUNT(*) as report_count')
             ->where('commodity_id', $commodity->id)
@@ -85,6 +111,55 @@ class PriceAnalyticsService
             'percent_difference' => $percent,
             'status' => self::status($percent),
         ];
+    }
+
+    /**
+     * SRP in effect when the price was seen, and whether the price is far enough above it to flag.
+     *
+     * @return array{srp_price: float|null, is_flagged: bool}
+     */
+    public function assess(Commodity $commodity, float $price, Carbon $reportedAt): array
+    {
+        $srp = $commodity->currentSrp($reportedAt);
+        $srpPrice = $srp !== null ? (float) $srp->price : null;
+
+        return [
+            'srp_price' => $srpPrice,
+            'is_flagged' => self::exceedsFlagThreshold($price, $srpPrice),
+        ];
+    }
+
+    public static function exceedsFlagThreshold(float $price, ?float $srp): bool
+    {
+        if ($srp === null || $srp <= 0) {
+            return false;
+        }
+
+        return self::percentDifference($price, $srp) > (float) config('prices.flag_threshold_percent');
+    }
+
+    public static function clearCache(): void
+    {
+        Cache::forever(self::CACHE_VERSION_KEY, Str::random(8));
+    }
+
+    /**
+     * @template T
+     *
+     * @param  \Closure(): T  $callback
+     * @return T
+     */
+    private function remember(string $key, \Closure $callback): mixed
+    {
+        $seconds = (int) config('prices.analytics_cache_seconds');
+
+        if ($seconds <= 0) {
+            return $callback();
+        }
+
+        $version = Cache::get(self::CACHE_VERSION_KEY, 'initial');
+
+        return Cache::remember("price-analytics:{$version}:{$key}", $seconds, $callback);
     }
 
     public static function percentDifference(float $price, float $srp): float

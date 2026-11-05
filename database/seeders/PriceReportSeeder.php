@@ -6,6 +6,7 @@ use App\Models\Commodity;
 use App\Models\Market;
 use App\Models\PriceReport;
 use App\Models\User;
+use App\Services\PriceAnalyticsService;
 use Illuminate\Database\Seeder;
 
 class PriceReportSeeder extends Seeder
@@ -23,7 +24,9 @@ class PriceReportSeeder extends Seeder
         $rows = [];
 
         foreach (Commodity::query()->get() as $commodity) {
-            $srp = (float) ($commodity->currentSrp()->price ?? 100);
+            $current = $commodity->currentSrp();
+            $srpPrice = $current === null ? null : (float) $current->price;
+            $srp = $srpPrice ?? 100.0;
 
             for ($day = 29; $day >= 0; $day--) {
                 foreach ($this->pick($markets, 3) as $marketId) {
@@ -36,6 +39,8 @@ class PriceReportSeeder extends Seeder
                         'market_id' => $marketId,
                         'user_id' => $reporter->id,
                         'price' => $price,
+                        'srp_price' => $srpPrice,
+                        'is_flagged' => PriceAnalyticsService::exceedsFlagThreshold($price, $srpPrice),
                         'reported_at' => $reportedAt,
                         'created_at' => $reportedAt,
                         'updated_at' => $reportedAt,
