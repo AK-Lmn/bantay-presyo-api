@@ -15,6 +15,5 @@ fi
 
 php artisan migrate --force
 php artisan db:seed --force
-php artisan scribe:generate --no-interaction > /dev/null
 
 exec "$@"
