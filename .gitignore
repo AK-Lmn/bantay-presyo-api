@@ -23,5 +23,3 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 /.scribe
-/public/vendor/scribe
-/resources/views/scribe

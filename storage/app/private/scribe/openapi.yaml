@@ -1,0 +1,1306 @@
+openapi: 3.0.3
+info:
+  title: 'Bantay Presyo API'
+  description: 'Market prices of basic goods in the Philippines, compared against DTI suggested retail prices (SRP).'
+  version: 1.0.0
+servers:
+  -
+    url: 'http://localhost:8000'
+tags:
+  -
+    name: Auth
+    description: 'Accounts and tokens. Tokens are sent as `Authorization: Bearer <token>` and expire after 30 days. New accounts get a verification email and must verify before submitting price reports.'
+  -
+    name: Commodities
+    description: 'Basic goods tracked by the monitor, with price trends and SRP comparison.'
+  -
+    name: Markets
+    description: 'Public markets where prices are reported.'
+  -
+    name: SRPs
+    description: 'DTI suggested retail prices. The SRP in effect is the one with the latest effective date on or before today.'
+  -
+    name: 'Price reports'
+    description: 'Prices seen at a market on a given day, submitted by registered users.'
+components:
+  securitySchemes:
+    default:
+      type: http
+      scheme: bearer
+      description: 'Get a token from `POST /api/v1/auth/register` or `POST /api/v1/auth/login`. Creating or changing commodities, markets and SRPs requires an admin account.'
+security:
+  -
+    default: []
+paths:
+  /api/v1/auth/register:
+    post:
+      summary: ''
+      operationId: postApiV1AuthRegister
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: b
+                email:
+                  type: string
+                  description: 'Must be a valid email address. Must not be greater than 255 characters.'
+                  example: zbailey@example.net
+                password:
+                  type: string
+                  description: ''
+                  example: '|]|{+-'
+                device_name:
+                  type: string
+                  description: 'Must not be greater than 100 characters.'
+                  example: v
+              required:
+                - name
+                - email
+                - password
+      security: []
+  /api/v1/auth/login:
+    post:
+      summary: ''
+      operationId: postApiV1AuthLogin
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: 'Must be a valid email address.'
+                  example: gbailey@example.net
+                password:
+                  type: string
+                  description: ''
+                  example: '|]|{+-'
+                device_name:
+                  type: string
+                  description: 'Must not be greater than 100 characters.'
+                  example: v
+              required:
+                - email
+                - password
+      security: []
+  /api/v1/auth/forgot-password:
+    post:
+      summary: 'Request a password reset link'
+      operationId: requestAPasswordResetLink
+      description: "Always responds the same way so it can't be used to check which emails are registered.\nThe emailed link points to `FRONTEND_URL/reset-password?token=...&email=...`."
+      parameters: []
+      responses: {  }
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: 'Must be a valid email address.'
+                  example: gbailey@example.net
+              required:
+                - email
+      security: []
+  /api/v1/auth/reset-password:
+    post:
+      summary: 'Reset password'
+      operationId: resetPassword
+      description: 'Logs the user out of every device.'
+      parameters: []
+      responses: {  }
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  description: ''
+                  example: architecto
+                email:
+                  type: string
+                  description: 'Must be a valid email address.'
+                  example: zbailey@example.net
+                password:
+                  type: string
+                  description: ''
+                  example: '|]|{+-'
+              required:
+                - token
+                - email
+                - password
+      security: []
+  '/api/v1/auth/email/verify/{id}/{hash}':
+    get:
+      summary: 'Verify email'
+      operationId: verifyEmail
+      description: "Target of the signed link in the verification email. Submitting price reports\nrequires a verified email."
+      parameters: []
+      responses:
+        403:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  error:
+                    code: forbidden
+                    message: 'You are not allowed to perform this action.'
+                    details: null
+                properties:
+                  error:
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        example: forbidden
+                      message:
+                        type: string
+                        example: 'You are not allowed to perform this action.'
+                      details:
+                        type: string
+                        example: null
+                        nullable: true
+      tags:
+        - Auth
+      security: []
+    parameters:
+      -
+        in: path
+        name: id
+        description: 'The ID of the verify.'
+        example: architecto
+        required: true
+        schema:
+          type: string
+      -
+        in: path
+        name: hash
+        description: ''
+        example: architecto
+        required: true
+        schema:
+          type: string
+  /api/v1/auth/logout:
+    post:
+      summary: ''
+      operationId: postApiV1AuthLogout
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Auth
+  /api/v1/auth/email/verification-notification:
+    post:
+      summary: 'Resend verification email'
+      operationId: resendVerificationEmail
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Auth
+  /api/v1/commodities:
+    get:
+      summary: ''
+      operationId: getApiV1Commodities
+      description: ''
+      parameters:
+        -
+          in: query
+          name: category
+          description: 'Filter by category.'
+          example: Rice
+          required: false
+          schema:
+            type: string
+            description: 'Filter by category.'
+            example: Rice
+        -
+          in: query
+          name: q
+          description: 'Search by name.'
+          example: pork
+          required: false
+          schema:
+            type: string
+            description: 'Search by name.'
+            example: pork
+        -
+          in: query
+          name: page
+          description: ''
+          example: 1
+          required: false
+          schema:
+            type: integer
+            description: ''
+            example: 1
+        -
+          in: query
+          name: per_page
+          description: 'Max 100.'
+          example: 20
+          required: false
+          schema:
+            type: integer
+            description: 'Max 100.'
+            example: 20
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data: []
+                  meta:
+                    page: 1
+                    per_page: 20
+                    total: 0
+                properties:
+                  data:
+                    type: array
+                    example: []
+                  meta:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                        example: 1
+                      per_page:
+                        type: integer
+                        example: 20
+                      total:
+                        type: integer
+                        example: 0
+      tags:
+        - Commodities
+      security: []
+    post:
+      summary: ''
+      operationId: postApiV1Commodities
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Commodities
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: b
+                category:
+                  type: string
+                  description: 'Must not be greater than 100 characters.'
+                  example: 'n'
+                unit:
+                  type: string
+                  description: 'Must not be greater than 20 characters.'
+                  example: gzmiyvdljnikhway
+              required:
+                - name
+                - category
+                - unit
+  '/api/v1/commodities/{commodity_id}':
+    get:
+      summary: ''
+      operationId: getApiV1CommoditiesCommodity_id
+      description: ''
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data:
+                    id: 1
+                    name: 'Well-milled rice'
+                    category: Rice
+                    unit: kg
+                    created_at: '2026-11-04T18:17:18Z'
+                    updated_at: '2026-11-04T18:17:18Z'
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      name:
+                        type: string
+                        example: 'Well-milled rice'
+                      category:
+                        type: string
+                        example: Rice
+                      unit:
+                        type: string
+                        example: kg
+                      created_at:
+                        type: string
+                        example: '2026-11-04T18:17:18Z'
+                      updated_at:
+                        type: string
+                        example: '2026-11-04T18:17:18Z'
+      tags:
+        - Commodities
+      security: []
+    put:
+      summary: ''
+      operationId: putApiV1CommoditiesCommodity_id
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Commodities
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: b
+                category:
+                  type: string
+                  description: 'Must not be greater than 100 characters.'
+                  example: 'n'
+                unit:
+                  type: string
+                  description: 'Must not be greater than 20 characters.'
+                  example: gzmiyvdljnikhway
+    delete:
+      summary: ''
+      operationId: deleteApiV1CommoditiesCommodity_id
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Commodities
+    parameters:
+      -
+        in: path
+        name: commodity_id
+        description: 'The ID of the commodity.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+  '/api/v1/commodities/{commodity_id}/trend':
+    get:
+      summary: 'Daily price trend'
+      operationId: dailyPriceTrend
+      description: 'Average, minimum and maximum reported price per day. Defaults to the last 30 days.'
+      parameters:
+        -
+          in: query
+          name: from
+          description: 'Start date (inclusive). Defaults to 29 days before `to`. Must be a valid date in the format <code>Y-m-d</code>.'
+          example: '2026-10-30'
+          required: false
+          schema:
+            type: string
+            description: 'Start date (inclusive). Defaults to 29 days before `to`. Must be a valid date in the format <code>Y-m-d</code>.'
+            example: '2026-10-30'
+        -
+          in: query
+          name: to
+          description: 'End date (inclusive). Defaults to today. Must be a valid date in the format <code>Y-m-d</code>.'
+          example: '2026-11-05'
+          required: false
+          schema:
+            type: string
+            description: 'End date (inclusive). Defaults to today. Must be a valid date in the format <code>Y-m-d</code>.'
+            example: '2026-11-05'
+        -
+          in: query
+          name: market_id
+          description: 'Only count reports from this market. Must match an existing stored value.'
+          example: 1
+          required: false
+          schema:
+            type: integer
+            description: 'Only count reports from this market. Must match an existing stored value.'
+            example: 1
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data:
+                    commodity_id: 1
+                    market_id: 1
+                    from: '2026-10-30'
+                    to: '2026-11-05'
+                    days:
+                      -
+                        date: '2026-10-30'
+                        average: 46.01
+                        min: 46.01
+                        max: 46.01
+                        report_count: 1
+                      -
+                        date: '2026-11-02'
+                        average: 45.15
+                        min: 45.15
+                        max: 45.15
+                        report_count: 1
+                      -
+                        date: '2026-11-03'
+                        average: 43.43
+                        min: 43.43
+                        max: 43.43
+                        report_count: 1
+                      -
+                        date: '2026-11-04'
+                        average: 57.19
+                        min: 57.19
+                        max: 57.19
+                        report_count: 1
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      commodity_id:
+                        type: integer
+                        example: 1
+                      market_id:
+                        type: integer
+                        example: 1
+                      from:
+                        type: string
+                        example: '2026-10-30'
+                      to:
+                        type: string
+                        example: '2026-11-05'
+                      days:
+                        type: array
+                        example:
+                          -
+                            date: '2026-10-30'
+                            average: 46.01
+                            min: 46.01
+                            max: 46.01
+                            report_count: 1
+                          -
+                            date: '2026-11-02'
+                            average: 45.15
+                            min: 45.15
+                            max: 45.15
+                            report_count: 1
+                          -
+                            date: '2026-11-03'
+                            average: 43.43
+                            min: 43.43
+                            max: 43.43
+                            report_count: 1
+                          -
+                            date: '2026-11-04'
+                            average: 57.19
+                            min: 57.19
+                            max: 57.19
+                            report_count: 1
+                        items:
+                          type: object
+                          properties:
+                            date:
+                              type: string
+                              example: '2026-10-30'
+                            average:
+                              type: number
+                              example: 46.01
+                            min:
+                              type: number
+                              example: 46.01
+                            max:
+                              type: number
+                              example: 46.01
+                            report_count:
+                              type: integer
+                              example: 1
+      tags:
+        - Commodities
+      security: []
+    parameters:
+      -
+        in: path
+        name: commodity_id
+        description: 'The ID of the commodity.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+  '/api/v1/commodities/{commodity_id}/compare':
+    get:
+      summary: 'Compare with SRP'
+      operationId: compareWithSRP
+      description: 'Average reported price over the last `days` days (default 7) against the SRP in effect today.'
+      parameters:
+        -
+          in: query
+          name: days
+          description: 'Size of the averaging window in days, ending today. Must be at least 1. Must not be greater than 90.'
+          example: 7
+          required: false
+          schema:
+            type: integer
+            description: 'Size of the averaging window in days, ending today. Must be at least 1. Must not be greater than 90.'
+            example: 7
+        -
+          in: query
+          name: market_id
+          description: 'Only count reports from this market. Must match an existing stored value.'
+          example: 1
+          required: false
+          schema:
+            type: integer
+            description: 'Only count reports from this market. Must match an existing stored value.'
+            example: 1
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data:
+                    commodity_id: 1
+                    market_id: 1
+                    window:
+                      from: '2026-10-30'
+                      to: '2026-11-05'
+                      days: 7
+                    average_price: 47.95
+                    report_count: 4
+                    srp:
+                      price: 43
+                      effective_date: '2026-10-05'
+                    difference: 4.95
+                    percent_difference: 11.51
+                    status: above_srp
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      commodity_id:
+                        type: integer
+                        example: 1
+                      market_id:
+                        type: integer
+                        example: 1
+                      window:
+                        type: object
+                        properties:
+                          from:
+                            type: string
+                            example: '2026-10-30'
+                          to:
+                            type: string
+                            example: '2026-11-05'
+                          days:
+                            type: integer
+                            example: 7
+                      average_price:
+                        type: number
+                        example: 47.95
+                      report_count:
+                        type: integer
+                        example: 4
+                      srp:
+                        type: object
+                        properties:
+                          price:
+                            type: integer
+                            example: 43
+                          effective_date:
+                            type: string
+                            example: '2026-10-05'
+                      difference:
+                        type: number
+                        example: 4.95
+                      percent_difference:
+                        type: number
+                        example: 11.51
+                      status:
+                        type: string
+                        example: above_srp
+      tags:
+        - Commodities
+      security: []
+    parameters:
+      -
+        in: path
+        name: commodity_id
+        description: 'The ID of the commodity.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+  /api/v1/markets:
+    get:
+      summary: ''
+      operationId: getApiV1Markets
+      description: ''
+      parameters:
+        -
+          in: query
+          name: city
+          description: 'Filter by city.'
+          example: 'Quezon City'
+          required: false
+          schema:
+            type: string
+            description: 'Filter by city.'
+            example: 'Quezon City'
+        -
+          in: query
+          name: region
+          description: 'Filter by region.'
+          example: NCR
+          required: false
+          schema:
+            type: string
+            description: 'Filter by region.'
+            example: NCR
+        -
+          in: query
+          name: page
+          description: ''
+          example: 1
+          required: false
+          schema:
+            type: integer
+            description: ''
+            example: 1
+        -
+          in: query
+          name: per_page
+          description: 'Max 100.'
+          example: 20
+          required: false
+          schema:
+            type: integer
+            description: 'Max 100.'
+            example: 20
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data:
+                    -
+                      id: 1
+                      name: 'Commonwealth Market'
+                      city: 'Quezon City'
+                      region: NCR
+                      created_at: '2026-11-04T18:17:18Z'
+                      updated_at: '2026-11-04T18:17:18Z'
+                    -
+                      id: 2
+                      name: 'Mega Q-Mart'
+                      city: 'Quezon City'
+                      region: NCR
+                      created_at: '2026-11-04T18:17:18Z'
+                      updated_at: '2026-11-04T18:17:18Z'
+                  meta:
+                    page: 1
+                    per_page: 20
+                    total: 2
+                properties:
+                  data:
+                    type: array
+                    example:
+                      -
+                        id: 1
+                        name: 'Commonwealth Market'
+                        city: 'Quezon City'
+                        region: NCR
+                        created_at: '2026-11-04T18:17:18Z'
+                        updated_at: '2026-11-04T18:17:18Z'
+                      -
+                        id: 2
+                        name: 'Mega Q-Mart'
+                        city: 'Quezon City'
+                        region: NCR
+                        created_at: '2026-11-04T18:17:18Z'
+                        updated_at: '2026-11-04T18:17:18Z'
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 1
+                        name:
+                          type: string
+                          example: 'Commonwealth Market'
+                        city:
+                          type: string
+                          example: 'Quezon City'
+                        region:
+                          type: string
+                          example: NCR
+                        created_at:
+                          type: string
+                          example: '2026-11-04T18:17:18Z'
+                        updated_at:
+                          type: string
+                          example: '2026-11-04T18:17:18Z'
+                  meta:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                        example: 1
+                      per_page:
+                        type: integer
+                        example: 20
+                      total:
+                        type: integer
+                        example: 2
+      tags:
+        - Markets
+      security: []
+    post:
+      summary: ''
+      operationId: postApiV1Markets
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Markets
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: b
+                city:
+                  type: string
+                  description: 'Must not be greater than 100 characters.'
+                  example: 'n'
+                region:
+                  type: string
+                  description: 'Must not be greater than 100 characters.'
+                  example: g
+              required:
+                - name
+                - city
+                - region
+  '/api/v1/markets/{market_id}':
+    get:
+      summary: ''
+      operationId: getApiV1MarketsMarket_id
+      description: ''
+      parameters: []
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data:
+                    id: 1
+                    name: 'Commonwealth Market'
+                    city: 'Quezon City'
+                    region: NCR
+                    created_at: '2026-11-04T18:17:18Z'
+                    updated_at: '2026-11-04T18:17:18Z'
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                        example: 1
+                      name:
+                        type: string
+                        example: 'Commonwealth Market'
+                      city:
+                        type: string
+                        example: 'Quezon City'
+                      region:
+                        type: string
+                        example: NCR
+                      created_at:
+                        type: string
+                        example: '2026-11-04T18:17:18Z'
+                      updated_at:
+                        type: string
+                        example: '2026-11-04T18:17:18Z'
+      tags:
+        - Markets
+      security: []
+    put:
+      summary: ''
+      operationId: putApiV1MarketsMarket_id
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Markets
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 'Must not be greater than 255 characters.'
+                  example: b
+                city:
+                  type: string
+                  description: 'Must not be greater than 100 characters.'
+                  example: 'n'
+                region:
+                  type: string
+                  description: 'Must not be greater than 100 characters.'
+                  example: g
+    delete:
+      summary: ''
+      operationId: deleteApiV1MarketsMarket_id
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - Markets
+    parameters:
+      -
+        in: path
+        name: market_id
+        description: 'The ID of the market.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+  /api/v1/srps:
+    get:
+      summary: ''
+      operationId: getApiV1Srps
+      description: ''
+      parameters:
+        -
+          in: query
+          name: commodity_id
+          description: 'Filter by commodity.'
+          example: 1
+          required: false
+          schema:
+            type: integer
+            description: 'Filter by commodity.'
+            example: 1
+        -
+          in: query
+          name: page
+          description: ''
+          example: 1
+          required: false
+          schema:
+            type: integer
+            description: ''
+            example: 1
+        -
+          in: query
+          name: per_page
+          description: 'Max 100.'
+          example: 20
+          required: false
+          schema:
+            type: integer
+            description: 'Max 100.'
+            example: 20
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data:
+                    -
+                      id: 2
+                      commodity_id: 1
+                      price: 43
+                      effective_date: '2026-10-05'
+                      created_at: '2026-11-04T18:17:18Z'
+                    -
+                      id: 1
+                      commodity_id: 1
+                      price: 45
+                      effective_date: '2026-08-06'
+                      created_at: '2026-11-04T18:17:18Z'
+                  meta:
+                    page: 1
+                    per_page: 20
+                    total: 2
+                properties:
+                  data:
+                    type: array
+                    example:
+                      -
+                        id: 2
+                        commodity_id: 1
+                        price: 43
+                        effective_date: '2026-10-05'
+                        created_at: '2026-11-04T18:17:18Z'
+                      -
+                        id: 1
+                        commodity_id: 1
+                        price: 45
+                        effective_date: '2026-08-06'
+                        created_at: '2026-11-04T18:17:18Z'
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          example: 2
+                        commodity_id:
+                          type: integer
+                          example: 1
+                        price:
+                          type: integer
+                          example: 43
+                        effective_date:
+                          type: string
+                          example: '2026-10-05'
+                        created_at:
+                          type: string
+                          example: '2026-11-04T18:17:18Z'
+                  meta:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                        example: 1
+                      per_page:
+                        type: integer
+                        example: 20
+                      total:
+                        type: integer
+                        example: 2
+      tags:
+        - SRPs
+      security: []
+    post:
+      summary: ''
+      operationId: postApiV1Srps
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - SRPs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                commodity_id:
+                  type: integer
+                  description: 'Must match an existing stored value.'
+                  example: 16
+                price:
+                  type: number
+                  description: 'Must not be greater than 100000.'
+                  example: 22
+                effective_date:
+                  type: string
+                  description: 'Must be a valid date in the format <code>Y-m-d</code>.'
+                  example: '2026-11-05'
+              required:
+                - commodity_id
+                - price
+                - effective_date
+  /api/v1/srps/import:
+    post:
+      summary: 'Import an SRP bulletin'
+      operationId: importAnSRPBulletin
+      description: "Upload a CSV with a header row. Rows are matched to commodities by name (and `unit` if given).\nAn existing SRP for the same commodity and date is updated. If any row is invalid, nothing is imported\nand every bad row is listed in `error.details.file`. See `docs/srp-import-example.csv`."
+      parameters: []
+      responses: {  }
+      tags:
+        - SRPs
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 'CSV with a header row: `commodity`, `price`, and optionally `unit` and `effective_date`. Max 1 MB. Must be a file. Must not be greater than 1024 kilobytes.'
+                effective_date:
+                  type: string
+                  description: 'Used for rows without an `effective_date`. Must be a valid date in the format <code>Y-m-d</code>.'
+                  example: '2026-11-01'
+              required:
+                - file
+  '/api/v1/srps/{srp_id}':
+    delete:
+      summary: ''
+      operationId: deleteApiV1SrpsSrp_id
+      description: ''
+      parameters: []
+      responses: {  }
+      tags:
+        - SRPs
+    parameters:
+      -
+        in: path
+        name: srp_id
+        description: 'The ID of the srp.'
+        example: 1
+        required: true
+        schema:
+          type: integer
+  /api/v1/price-reports:
+    get:
+      summary: 'List price reports'
+      operationId: listPriceReports
+      description: 'Newest first. Reports hidden by moderators are left out.'
+      parameters:
+        -
+          in: query
+          name: commodity_id
+          description: 'Filter by commodity.'
+          example: 1
+          required: false
+          schema:
+            type: integer
+            description: 'Filter by commodity.'
+            example: 1
+        -
+          in: query
+          name: market_id
+          description: 'Filter by market.'
+          example: 1
+          required: false
+          schema:
+            type: integer
+            description: 'Filter by market.'
+            example: 1
+        -
+          in: query
+          name: from
+          description: 'Earliest report date (inclusive). Must be a valid date in the format <code>Y-m-d</code>.'
+          example: '2026-10-30'
+          required: false
+          schema:
+            type: string
+            description: 'Earliest report date (inclusive). Must be a valid date in the format <code>Y-m-d</code>.'
+            example: '2026-10-30'
+        -
+          in: query
+          name: to
+          description: 'Latest report date (inclusive). Must be a valid date in the format <code>Y-m-d</code>.'
+          example: '2026-11-05'
+          required: false
+          schema:
+            type: string
+            description: 'Latest report date (inclusive). Must be a valid date in the format <code>Y-m-d</code>.'
+            example: '2026-11-05'
+        -
+          in: query
+          name: page
+          description: 'Must be at least 1.'
+          example: 1
+          required: false
+          schema:
+            type: integer
+            description: 'Must be at least 1.'
+            example: 1
+        -
+          in: query
+          name: per_page
+          description: 'Max 100. Must be at least 1. Must not be greater than 100.'
+          example: 20
+          required: false
+          schema:
+            type: integer
+            description: 'Max 100. Must be at least 1. Must not be greater than 100.'
+            example: 20
+        -
+          in: query
+          name: flagged
+          description: 'Only reports more than 30% above the SRP in effect (1) or only the rest (0).'
+          example: true
+          required: false
+          schema:
+            type: boolean
+            description: 'Only reports more than 30% above the SRP in effect (1) or only the rest (0).'
+            example: true
+        -
+          in: query
+          name: include_hidden
+          description: 'Admins only. Include reports hidden by moderators.'
+          example: false
+          required: false
+          schema:
+            type: boolean
+            description: 'Admins only. Include reports hidden by moderators.'
+            example: false
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  data: []
+                  meta:
+                    page: 1
+                    per_page: 20
+                    total: 0
+                properties:
+                  data:
+                    type: array
+                    example: []
+                  meta:
+                    type: object
+                    properties:
+                      page:
+                        type: integer
+                        example: 1
+                      per_page:
+                        type: integer
+                        example: 20
+                      total:
+                        type: integer
+                        example: 0
+      tags:
+        - 'Price reports'
+      security: []
+    post:
+      summary: 'Submit a price report'
+      operationId: submitAPriceReport
+      description: "Requires a verified email. `reported_at` defaults to now and cannot be in the future.\nReports more than 30% above the SRP in effect at `reported_at` come back with `flagged: true`.\nLimited to 10 reports a minute and 200 a day per user."
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Price reports'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                commodity_id:
+                  type: integer
+                  description: 'Must match an existing stored value.'
+                  example: 1
+                market_id:
+                  type: integer
+                  description: 'Must match an existing stored value.'
+                  example: 1
+                price:
+                  type: number
+                  description: 'Price in PHP per commodity unit. Must not be greater than 100000.'
+                  example: 52.5
+                reported_at:
+                  type: string
+                  description: 'When the price was seen. Defaults to now. Must be a valid date. Must be a date before or equal to <code>now</code>.'
+                  example: '2026-11-05T04:27:26Z'
+              required:
+                - commodity_id
+                - market_id
+                - price
+  '/api/v1/price-reports/{priceReport_id}/hide':
+    post:
+      summary: 'Hide a report'
+      operationId: hideAReport
+      description: 'Admins only. Hidden reports are left out of listings, trends and SRP comparisons.'
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Price reports'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  description: 'Why the report was hidden. Shown to admins only. Must not be greater than 255 characters.'
+                  example: 'Price entered per sack instead of per kg.'
+                  nullable: true
+    delete:
+      summary: 'Unhide a report'
+      operationId: unhideAReport
+      description: 'Admins only.'
+      parameters: []
+      responses: {  }
+      tags:
+        - 'Price reports'
+    parameters:
+      -
+        in: path
+        name: priceReport_id
+        description: 'The ID of the priceReport.'
+        example: 1
+        required: true
+        schema:
+          type: integer

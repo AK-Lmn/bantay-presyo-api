@@ -1,0 +1,1260 @@
+{
+    "variable": [
+        {
+            "id": "baseUrl",
+            "key": "baseUrl",
+            "type": "string",
+            "name": "string",
+            "value": "http:\/\/localhost:8000"
+        }
+    ],
+    "info": {
+        "name": "Bantay Presyo API",
+        "_postman_id": "154c7d14-e92e-4405-ac4d-9405e9f346ca",
+        "description": "Market prices of basic goods in the Philippines, compared against DTI suggested retail prices (SRP).",
+        "schema": "https:\/\/schema.getpostman.com\/json\/collection\/v2.1.0\/collection.json"
+    },
+    "item": [
+        {
+            "name": "Auth",
+            "description": "Accounts and tokens. Tokens are sent as `Authorization: Bearer <token>` and expire after 30 days. New accounts get a verification email and must verify before submitting price reports.",
+            "item": [
+                {
+                    "name": "POST api\/v1\/auth\/register",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/register",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/register"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"name\":\"b\",\"email\":\"zbailey@example.net\",\"password\":\"|]|{+-\",\"device_name\":\"v\"}"
+                        },
+                        "description": "",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "POST api\/v1\/auth\/login",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/login",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/login"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"email\":\"gbailey@example.net\",\"password\":\"|]|{+-\",\"device_name\":\"v\"}"
+                        },
+                        "description": "",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Request a password reset link",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/forgot-password",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/forgot-password"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"email\":\"gbailey@example.net\"}"
+                        },
+                        "description": "Always responds the same way so it can't be used to check which emails are registered.\nThe emailed link points to `FRONTEND_URL\/reset-password?token=...&email=...`.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Reset password",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/reset-password",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/reset-password"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"token\":\"architecto\",\"email\":\"zbailey@example.net\",\"password\":\"|]|{+-\"}"
+                        },
+                        "description": "Logs the user out of every device.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Verify email",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/email\/verify\/:id\/:hash",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/email\/verify\/:id\/:hash",
+                            "variable": [
+                                {
+                                    "id": "id",
+                                    "key": "id",
+                                    "value": "architecto",
+                                    "description": "The ID of the verify."
+                                },
+                                {
+                                    "id": "hash",
+                                    "key": "hash",
+                                    "value": "architecto",
+                                    "description": ""
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Target of the signed link in the verification email. Submitting price reports\nrequires a verified email.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "x-ratelimit-limit",
+                                    "value": "6"
+                                },
+                                {
+                                    "key": "x-ratelimit-remaining",
+                                    "value": "5"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 403,
+                            "body": "{\"error\":{\"code\":\"forbidden\",\"message\":\"You are not allowed to perform this action.\",\"details\":null}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "POST api\/v1\/auth\/logout",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/logout",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/logout"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Resend verification email",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/auth\/email\/verification-notification",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/auth\/email\/verification-notification"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Commodities",
+            "description": "Basic goods tracked by the monitor, with price trends and SRP comparison.",
+            "item": [
+                {
+                    "name": "GET api\/v1\/commodities",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/commodities",
+                            "query": [
+                                {
+                                    "key": "category",
+                                    "value": "Rice",
+                                    "description": "Filter by category.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "q",
+                                    "value": "pork",
+                                    "description": "Search by name.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "page",
+                                    "value": "1",
+                                    "description": "",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "per_page",
+                                    "value": "20",
+                                    "description": "Max 100.",
+                                    "disabled": false
+                                }
+                            ],
+                            "raw": "{{baseUrl}}\/api\/v1\/commodities?category=Rice&q=pork&page=1&per_page=20"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 200,
+                            "body": "{\"data\":[],\"meta\":{\"page\":1,\"per_page\":20,\"total\":0}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "GET api\/v1\/commodities\/{commodity_id}",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/commodities\/:commodity_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/commodities\/:commodity_id",
+                            "variable": [
+                                {
+                                    "id": "commodity_id",
+                                    "key": "commodity_id",
+                                    "value": 1,
+                                    "description": "The ID of the commodity."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 200,
+                            "body": "{\"data\":{\"id\":1,\"name\":\"Well-milled rice\",\"category\":\"Rice\",\"unit\":\"kg\",\"created_at\":\"2026-11-04T18:17:18Z\",\"updated_at\":\"2026-11-04T18:17:18Z\"}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Daily price trend",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/commodities\/:commodity_id\/trend",
+                            "query": [
+                                {
+                                    "key": "from",
+                                    "value": "2026-10-30",
+                                    "description": "Start date (inclusive). Defaults to 29 days before `to`. Must be a valid date in the format Y-m-d.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "to",
+                                    "value": "2026-11-05",
+                                    "description": "End date (inclusive). Defaults to today. Must be a valid date in the format Y-m-d.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "market_id",
+                                    "value": "1",
+                                    "description": "Only count reports from this market. Must match an existing stored value.",
+                                    "disabled": false
+                                }
+                            ],
+                            "raw": "{{baseUrl}}\/api\/v1\/commodities\/:commodity_id\/trend?from=2026-10-30&to=2026-11-05&market_id=1",
+                            "variable": [
+                                {
+                                    "id": "commodity_id",
+                                    "key": "commodity_id",
+                                    "value": 1,
+                                    "description": "The ID of the commodity."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Average, minimum and maximum reported price per day. Defaults to the last 30 days.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 200,
+                            "body": "{\"data\":{\"commodity_id\":1,\"market_id\":1,\"from\":\"2026-10-30\",\"to\":\"2026-11-05\",\"days\":[{\"date\":\"2026-10-30\",\"average\":46.01,\"min\":46.01,\"max\":46.01,\"report_count\":1},{\"date\":\"2026-11-02\",\"average\":45.15,\"min\":45.15,\"max\":45.15,\"report_count\":1},{\"date\":\"2026-11-03\",\"average\":43.43,\"min\":43.43,\"max\":43.43,\"report_count\":1},{\"date\":\"2026-11-04\",\"average\":57.19,\"min\":57.19,\"max\":57.19,\"report_count\":1}]}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Compare with SRP",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/commodities\/:commodity_id\/compare",
+                            "query": [
+                                {
+                                    "key": "days",
+                                    "value": "7",
+                                    "description": "Size of the averaging window in days, ending today. Must be at least 1. Must not be greater than 90.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "market_id",
+                                    "value": "1",
+                                    "description": "Only count reports from this market. Must match an existing stored value.",
+                                    "disabled": false
+                                }
+                            ],
+                            "raw": "{{baseUrl}}\/api\/v1\/commodities\/:commodity_id\/compare?days=7&market_id=1",
+                            "variable": [
+                                {
+                                    "id": "commodity_id",
+                                    "key": "commodity_id",
+                                    "value": 1,
+                                    "description": "The ID of the commodity."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Average reported price over the last `days` days (default 7) against the SRP in effect today.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 200,
+                            "body": "{\"data\":{\"commodity_id\":1,\"market_id\":1,\"window\":{\"from\":\"2026-10-30\",\"to\":\"2026-11-05\",\"days\":7},\"average_price\":47.95,\"report_count\":4,\"srp\":{\"price\":43,\"effective_date\":\"2026-10-05\"},\"difference\":4.95,\"percent_difference\":11.51,\"status\":\"above_srp\"}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "POST api\/v1\/commodities",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/commodities",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/commodities"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"name\":\"b\",\"category\":\"n\",\"unit\":\"gzmiyvdljnikhway\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "PUT api\/v1\/commodities\/{commodity_id}",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/commodities\/:commodity_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/commodities\/:commodity_id",
+                            "variable": [
+                                {
+                                    "id": "commodity_id",
+                                    "key": "commodity_id",
+                                    "value": 1,
+                                    "description": "The ID of the commodity."
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"name\":\"b\",\"category\":\"n\",\"unit\":\"gzmiyvdljnikhway\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "DELETE api\/v1\/commodities\/{commodity_id}",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/commodities\/:commodity_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/commodities\/:commodity_id",
+                            "variable": [
+                                {
+                                    "id": "commodity_id",
+                                    "key": "commodity_id",
+                                    "value": 1,
+                                    "description": "The ID of the commodity."
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Markets",
+            "description": "Public markets where prices are reported.",
+            "item": [
+                {
+                    "name": "GET api\/v1\/markets",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/markets",
+                            "query": [
+                                {
+                                    "key": "city",
+                                    "value": "Quezon City",
+                                    "description": "Filter by city.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "region",
+                                    "value": "NCR",
+                                    "description": "Filter by region.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "page",
+                                    "value": "1",
+                                    "description": "",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "per_page",
+                                    "value": "20",
+                                    "description": "Max 100.",
+                                    "disabled": false
+                                }
+                            ],
+                            "raw": "{{baseUrl}}\/api\/v1\/markets?city=Quezon%20City&region=NCR&page=1&per_page=20"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 200,
+                            "body": "{\"data\":[{\"id\":1,\"name\":\"Commonwealth Market\",\"city\":\"Quezon City\",\"region\":\"NCR\",\"created_at\":\"2026-11-04T18:17:18Z\",\"updated_at\":\"2026-11-04T18:17:18Z\"},{\"id\":2,\"name\":\"Mega Q-Mart\",\"city\":\"Quezon City\",\"region\":\"NCR\",\"created_at\":\"2026-11-04T18:17:18Z\",\"updated_at\":\"2026-11-04T18:17:18Z\"}],\"meta\":{\"page\":1,\"per_page\":20,\"total\":2}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "GET api\/v1\/markets\/{market_id}",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/markets\/:market_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/markets\/:market_id",
+                            "variable": [
+                                {
+                                    "id": "market_id",
+                                    "key": "market_id",
+                                    "value": 1,
+                                    "description": "The ID of the market."
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 200,
+                            "body": "{\"data\":{\"id\":1,\"name\":\"Commonwealth Market\",\"city\":\"Quezon City\",\"region\":\"NCR\",\"created_at\":\"2026-11-04T18:17:18Z\",\"updated_at\":\"2026-11-04T18:17:18Z\"}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "POST api\/v1\/markets",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/markets",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/markets"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"name\":\"b\",\"city\":\"n\",\"region\":\"g\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "PUT api\/v1\/markets\/{market_id}",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/markets\/:market_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/markets\/:market_id",
+                            "variable": [
+                                {
+                                    "id": "market_id",
+                                    "key": "market_id",
+                                    "value": 1,
+                                    "description": "The ID of the market."
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"name\":\"b\",\"city\":\"n\",\"region\":\"g\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "DELETE api\/v1\/markets\/{market_id}",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/markets\/:market_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/markets\/:market_id",
+                            "variable": [
+                                {
+                                    "id": "market_id",
+                                    "key": "market_id",
+                                    "value": 1,
+                                    "description": "The ID of the market."
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "SRPs",
+            "description": "DTI suggested retail prices. The SRP in effect is the one with the latest effective date on or before today.",
+            "item": [
+                {
+                    "name": "GET api\/v1\/srps",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/srps",
+                            "query": [
+                                {
+                                    "key": "commodity_id",
+                                    "value": "1",
+                                    "description": "Filter by commodity.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "page",
+                                    "value": "1",
+                                    "description": "",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "per_page",
+                                    "value": "20",
+                                    "description": "Max 100.",
+                                    "disabled": false
+                                }
+                            ],
+                            "raw": "{{baseUrl}}\/api\/v1\/srps?commodity_id=1&page=1&per_page=20"
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 200,
+                            "body": "{\"data\":[{\"id\":2,\"commodity_id\":1,\"price\":43,\"effective_date\":\"2026-10-05\",\"created_at\":\"2026-11-04T18:17:18Z\"},{\"id\":1,\"commodity_id\":1,\"price\":45,\"effective_date\":\"2026-08-06\",\"created_at\":\"2026-11-04T18:17:18Z\"}],\"meta\":{\"page\":1,\"per_page\":20,\"total\":2}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "POST api\/v1\/srps",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/srps",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/srps"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"commodity_id\":16,\"price\":22,\"effective_date\":\"2026-11-05\"}"
+                        },
+                        "description": ""
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Import an SRP bulletin",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/srps\/import",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/srps\/import"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "multipart\/form-data"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "effective_date",
+                                    "value": "2026-11-01",
+                                    "type": "text",
+                                    "description": "Used for rows without an `effective_date`. Must be a valid date in the format <code>Y-m-d<\/code>."
+                                },
+                                {
+                                    "key": "file",
+                                    "src": [],
+                                    "type": "file"
+                                }
+                            ]
+                        },
+                        "description": "Upload a CSV with a header row. Rows are matched to commodities by name (and `unit` if given).\nAn existing SRP for the same commodity and date is updated. If any row is invalid, nothing is imported\nand every bad row is listed in `error.details.file`. See `docs\/srp-import-example.csv`."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "DELETE api\/v1\/srps\/{srp_id}",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/srps\/:srp_id",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/srps\/:srp_id",
+                            "variable": [
+                                {
+                                    "id": "srp_id",
+                                    "key": "srp_id",
+                                    "value": 1,
+                                    "description": "The ID of the srp."
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": ""
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "Price reports",
+            "description": "Prices seen at a market on a given day, submitted by registered users.",
+            "item": [
+                {
+                    "name": "List price reports",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/price-reports",
+                            "query": [
+                                {
+                                    "key": "commodity_id",
+                                    "value": "1",
+                                    "description": "Filter by commodity.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "market_id",
+                                    "value": "1",
+                                    "description": "Filter by market.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "from",
+                                    "value": "2026-10-30",
+                                    "description": "Earliest report date (inclusive). Must be a valid date in the format Y-m-d.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "to",
+                                    "value": "2026-11-05",
+                                    "description": "Latest report date (inclusive). Must be a valid date in the format Y-m-d.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "page",
+                                    "value": "1",
+                                    "description": "Must be at least 1.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "per_page",
+                                    "value": "20",
+                                    "description": "Max 100. Must be at least 1. Must not be greater than 100.",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "flagged",
+                                    "value": "1",
+                                    "description": "Only reports more than 30% above the SRP in effect (1) or only the rest (0).",
+                                    "disabled": false
+                                },
+                                {
+                                    "key": "include_hidden",
+                                    "value": "",
+                                    "description": "Admins only. Include reports hidden by moderators.",
+                                    "disabled": true
+                                }
+                            ],
+                            "raw": "{{baseUrl}}\/api\/v1\/price-reports?commodity_id=1&market_id=1&from=2026-10-30&to=2026-11-05&page=1&per_page=20&flagged=1&include_hidden="
+                        },
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Newest first. Reports hidden by moderators are left out.",
+                        "auth": {
+                            "type": "noauth"
+                        }
+                    },
+                    "response": [
+                        {
+                            "header": [
+                                {
+                                    "key": "cache-control",
+                                    "value": "no-cache, private"
+                                },
+                                {
+                                    "key": "content-type",
+                                    "value": "application\/json"
+                                },
+                                {
+                                    "key": "access-control-allow-origin",
+                                    "value": "*"
+                                }
+                            ],
+                            "code": 200,
+                            "body": "{\"data\":[],\"meta\":{\"page\":1,\"per_page\":20,\"total\":0}}",
+                            "name": ""
+                        }
+                    ]
+                },
+                {
+                    "name": "Submit a price report",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/price-reports",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/price-reports"
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"commodity_id\":1,\"market_id\":1,\"price\":52.5,\"reported_at\":\"2026-11-05T04:27:26Z\"}"
+                        },
+                        "description": "Requires a verified email. `reported_at` defaults to now and cannot be in the future.\nReports more than 30% above the SRP in effect at `reported_at` come back with `flagged: true`.\nLimited to 10 reports a minute and 200 a day per user."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Hide a report",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/price-reports\/:priceReport_id\/hide",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/price-reports\/:priceReport_id\/hide",
+                            "variable": [
+                                {
+                                    "id": "priceReport_id",
+                                    "key": "priceReport_id",
+                                    "value": 1,
+                                    "description": "The ID of the priceReport."
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\"reason\":\"Price entered per sack instead of per kg.\"}"
+                        },
+                        "description": "Admins only. Hidden reports are left out of listings, trends and SRP comparisons."
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Unhide a report",
+                    "request": {
+                        "url": {
+                            "host": "{{baseUrl}}",
+                            "path": "api\/v1\/price-reports\/:priceReport_id\/hide",
+                            "query": [],
+                            "raw": "{{baseUrl}}\/api\/v1\/price-reports\/:priceReport_id\/hide",
+                            "variable": [
+                                {
+                                    "id": "priceReport_id",
+                                    "key": "priceReport_id",
+                                    "value": 1,
+                                    "description": "The ID of the priceReport."
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application\/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application\/json"
+                            }
+                        ],
+                        "body": null,
+                        "description": "Admins only."
+                    },
+                    "response": []
+                }
+            ]
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "Authorization",
+                "type": "string"
+            }
+        ]
+    }
+}
